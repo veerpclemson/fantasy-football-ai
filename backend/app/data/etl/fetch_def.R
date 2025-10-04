@@ -10,20 +10,27 @@ cat("Fetching play-by-play data for seasons:", SEASONS, "\n")
 pbp <- load_pbp(SEASONS)
 
 # Filter for passing plays only
-pbp_pass <- pbp %>%
+pbp_pass <- pbp %>% 
   filter(pass_attempt == 1)
 
-# Heuristics:
-# Blitz: defenders_in_box > 6
-# Pressure: qb_hit == 1 OR pressure == 1
-# Coverage: man_coverage / zone_coverage if available, else approximate
-
+# Defensive heuristics
 pbp_def <- pbp_pass %>%
   mutate(
-    blitz = ifelse(!is.na(defenders_in_box) & defenders_in_box > 6, 1, 0),
-    pressure = ifelse(!is.na(qb_hit) & qb_hit == 1, 1, 0),
-    man_coverage = ifelse(!is.na(coverage) & coverage == "Man", 1, 0),
-    zone_coverage = ifelse(!is.na(coverage) & coverage == "Zone", 1, 0)
+    # Blitz heuristic: TFL or sack
+    blitz = ifelse(!is.na(tackle_for_loss_1_player_id) | 
+                   !is.na(tackle_for_loss_2_player_id) |
+                   !is.na(sack_player_id), 1, 0),
+    
+    # Pressure heuristic: QB hit or sack
+    pressure = ifelse(!is.na(qb_hit_1_player_id) |
+                      !is.na(qb_hit_2_player_id) |
+                      !is.na(sack_player_id), 1, 0),
+    
+    # Coverage heuristic: approximate man coverage if any defender listed, zone otherwise
+    man_coverage = ifelse(!is.na(pass_defense_1_player_id) | 
+                          !is.na(pass_defense_2_player_id), 1, 0),
+    
+    zone_coverage = 1 - man_coverage
   ) %>%
   select(season, week, defteam, blitz, pressure, man_coverage, zone_coverage)
 
@@ -39,7 +46,7 @@ def_tendencies <- pbp_def %>%
     .groups = "drop"
   )
 
-
+# Save CSV
 def_file <- paste0(OUTPUT_DIR, "defense_tendencies_", min(SEASONS), "_", max(SEASONS), ".csv")
 write_csv(def_tendencies, def_file)
-cat("Saved defensive tendencies to", def_file, "\n")
+cat("Saved improved defensive tendencies to", def_file, "\n")
