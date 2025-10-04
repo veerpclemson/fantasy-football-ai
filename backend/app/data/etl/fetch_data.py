@@ -8,7 +8,6 @@ load_dotenv()
 DB_URI = os.getenv("DATABASE_URL")
 engine = create_engine(DB_URI)
 
-
 csv_files = [
     "play_by_play/pbp_2021_2024.csv"
 ]
