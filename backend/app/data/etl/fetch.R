@@ -41,4 +41,31 @@ roster_file <- paste0(OUTPUT_DIR, "roster_", min(SEASONS), "_", max(SEASONS), ".
 write_csv(roster, roster_file)
 cat("Saved roster to", roster_file, "\n")
 
+
+cat("Fetching game metadata\n")
+games <- fast_scraper_schedules(SEASONS)
+
+# select useful columns
+games_small <- games %>%
+  select(game_id, season, week, home_team, away_team, game_date, stadium, roof, surface) %>%
+  mutate(game_date = as.Date(game_date))
+
+# ------------------------
+# Calculate rest days
+# ------------------------
+games_small <- games_small %>%
+  arrange(home_team, game_date) %>%
+  group_by(home_team) %>%
+  mutate(home_days_rest = as.numeric(difftime(game_date, lag(game_date), units = "days"))) %>%
+  ungroup() %>%
+  arrange(away_team, game_date) %>%
+  group_by(away_team) %>%
+  mutate(away_days_rest = as.numeric(difftime(game_date, lag(game_date), units = "days"))) %>%
+  ungroup()
+
+games_file <- paste0(OUTPUT_DIR, "games_", min(SEASONS), "_", max(SEASONS), ".csv")
+write_csv(games_small, games_file)
+cat("Saved game metadata to", games_file, "\n")
+
+
 cat("Done!\n")
