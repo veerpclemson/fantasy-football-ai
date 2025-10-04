@@ -27,7 +27,7 @@ for file in csv_files:
         "interception", "fumble_lost", "pass_attempt", "complete_pass"
     ]].copy()
 
-    # Create needed columns
+    
     df_small["reception"] = df_small["complete_pass"].apply(lambda x: 1 if x == 1 else 0)
     df_small["receiving_yards"] = df_small["air_yards"] + df_small["yards_after_catch"]
     df_small["passing_yards"] = df_small.apply(
@@ -46,13 +46,13 @@ for file in csv_files:
             points -= row["interception"] * 2
             points -= row["fumble_lost"] * 2
 
-        # Rushing points (for QB, RB, WR, TE if they ran)
+        # Rushing points 
         if row["rusher_player_id"]:
             points += row["rush_touchdown"] * 6
             points += row["rushing_yards"] / 10
             points -= row["fumble_lost"] * 2
 
-        # Receiving points (for WR, RB, TE if they caught)
+        # Receiving points 
         if row["receiver_player_id"]:
             points += row["receiving_yards"] / 10
             points += row["reception"]        # PPR
