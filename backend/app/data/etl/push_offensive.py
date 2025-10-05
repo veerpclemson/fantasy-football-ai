@@ -19,7 +19,7 @@ for file in roster_files:
 
     # Select relevant columns
     df_small = df[[
-        
+        "season","week","posteam","total_plays","pass_plays","rush_plays","pass_pct","rush_pct","red_zone_pass_pct","deep_pass_pct","avg_air_yards","avg_yards_after_catch"
     ]].copy()
 
     dfs.append(df_small)
@@ -27,6 +27,6 @@ for file in roster_files:
 roster_all = pd.concat(dfs, ignore_index=True)
 
 
-print("Saving def tendency to Postgres...")
+print("Saving off tendency to Postgres...")
 roster_all.to_sql("offensive_tendencies", engine, if_exists="replace", index=False)
 print("Done!")
