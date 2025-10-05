@@ -32,4 +32,3 @@ pbp_full = pbp_full.merge(
 
 pbp_full.to_sql("pbp_full_context", engine, if_exists="replace", index=False)
 
-
