@@ -41,7 +41,7 @@ features = [
     "red_zone_pass_pct_off", "deep_pass_pct_off", "avg_air_yards_off", "avg_yac_off",
     "blitz_rate_def", "pressure_rate_def", "man_coverage_pct_def", "zone_coverage_pct_def",
     "spread_line", "total_line", "over_odds", "under_odds",
-    "player_moneyline",
+    "player_moneyline", "fantasy_points", "fantasy_points_rolling3",
     "passing_yards_rolling3", "pass_touchdown_rolling3"
 ]
 target = "passing_yards"
