@@ -69,7 +69,7 @@ params = {
     "objective": "regression",
     "metric": "rmse",
     "boosting_type": "gbdt",
-    "learning_rate": 0.05,
+    "learning_rate": 0.01,
     "num_leaves": 31,
     "feature_fraction": 0.8,
     "bagging_fraction": 0.8,
