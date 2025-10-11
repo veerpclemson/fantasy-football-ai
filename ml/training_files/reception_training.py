@@ -38,12 +38,12 @@ df["player_moneyline"] = df.apply(
 # -------------------------------
 features = [
     "week", "pass_attempt", "complete_pass",
-    "total_pass_plays", "pass_plays_off", "pass_pct_off",
+    "total_pass_plays", "pass_plays_off", "pass_pct_off", "receiving_yards", "receiving_touchdown",
     "red_zone_pass_pct_off", "deep_pass_pct_off", "avg_air_yards_off", "avg_yac_off",
     "man_coverage_pct_def", "zone_coverage_pct_def", "blitz_rate_def", "pressure_rate_def", 
     "spread_line", "total_line", "over_odds", "under_odds",
     "player_moneyline",
-    "receiving_yards_rolling3", "reception_rolling3"
+    "receiving_yards_rolling3", "reception_rolling3", "receiving_touchdown_rolling3"
 ]
 target = "reception"
 
@@ -105,12 +105,12 @@ print(f"Test RMSE: {rmse:.2f}")
 # -------------------------------
 # Save model and predictions
 # -------------------------------
-model.save_model("../model_files/lgb_receptions_yards.txt")
+model.save_model("../model_files/lgb_reception_yards.txt")
 
 pd.DataFrame({
     "player_id": pid_test,
     "actual_receiving_yards": y_test,
     "predicted_receiving_yards": y_pred
-}).to_csv("../prediction_files/predicted_receptions_yards_2024.csv", index=False)
+}).to_csv("../prediction_files/predicted_reception_yards_2024.csv", index=False)
 
 print("✅ Model and predictions saved successfully.")
