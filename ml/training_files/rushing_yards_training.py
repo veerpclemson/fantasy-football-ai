@@ -37,7 +37,7 @@ df["player_moneyline"] = df.apply(
 # Define features and target
 # -------------------------------
 features = [
-    "week","rush_plays_off", "rush_pct_off", "rush_plays", "rush_touchdown",
+    "week","rush_plays_off", "rush_pct_off", "rush_plays", "rush_touchdown", "total_touches",
     "man_coverage_pct_def", "zone_coverage_pct_def","blitz_rate_def", "pressure_rate_def", 
     "spread_line", "total_line", "reception", "receiving_yards",
     "player_moneyline", "fantasy_points", "fantasy_points_rolling3",

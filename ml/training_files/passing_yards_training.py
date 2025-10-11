@@ -36,7 +36,7 @@ df["player_moneyline"] = df.apply(
 # Define features and target
 # -------------------------------
 features = [
-    "week", "pass_attempt", "complete_pass",
+    "week", "pass_attempt", "complete_pass", "total_touches",
     "total_pass_plays", "pass_plays_off", "pass_pct_off",
     "red_zone_pass_pct_off", "deep_pass_pct_off", "avg_air_yards_off", "avg_yac_off",
     "blitz_rate_def", "pressure_rate_def", "man_coverage_pct_def", "zone_coverage_pct_def",
