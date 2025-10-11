@@ -1,4 +1,4 @@
-player_id,actual_rushing_yards,predicted_rushing_yards
+player_id,actual,predicted
 00-0023459,1.0,2.478578863525676
 00-0023459,18.0,4.830405658748336
 00-0023459,26.0,21.259784105576735
