@@ -1,6 +1,6 @@
 import pandas as pd
 import lightgbm as lgb
-from sklearn.metrics import root_mean_squared_error # type: ignore
+from sklearn.metrics import root_mean_squared_error
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 import os
@@ -19,7 +19,7 @@ engine = create_engine(DB_URI)
 df = pd.read_sql_table("final_modeling_data", engine)
 
 # Filter valid rows
-df = df[(df["player_id"].astype(str) != "0") & (df["receiving_yards"] > 0)]
+df = df[(df["player_id"].astype(str) != "0") & (df["rushing_yards"] > 0)]
 
 # Sort to preserve time order
 df = df.sort_values(by=["player_id", "season", "week"])
@@ -40,12 +40,12 @@ features = [
     "week", "pass_attempt", "complete_pass",
     "total_pass_plays", "pass_plays_off", "pass_pct_off",
     "red_zone_pass_pct_off", "deep_pass_pct_off", "avg_air_yards_off", "avg_yac_off",
-    "man_coverage_pct_def", "zone_coverage_pct_def", "blitz_rate_def", "pressure_rate_def", 
+    "man_coverage_pct_def", "zone_coverage_pct_def","blitz_rate_def", "pressure_rate_def", 
     "spread_line", "total_line", "over_odds", "under_odds",
     "player_moneyline",
-    "receiving_yards_rolling3", "reception_rolling3"
+    "rushing_yards_rolling3"
 ]
-target = "receiving_yards"
+target = "rushing_yards"
 
 # Drop NaNs
 df_model = df[features + [target, "player_id", "season"]].dropna()
@@ -105,12 +105,12 @@ print(f"Test RMSE: {rmse:.2f}")
 # -------------------------------
 # Save model and predictions
 # -------------------------------
-model.save_model("../model_files/lgb_receiving_yards.txt")
+model.save_model("../model_files/lgb_rushing_yards.txt")
 
 pd.DataFrame({
     "player_id": pid_test,
-    "actual_receiving_yards": y_test,
-    "predicted_receiving_yards": y_pred
-}).to_csv("../prediction_files/predicted_receiving_yards_2024.csv", index=False)
+    "actual_rushing_yards": y_test,
+    "predicted_rushing_yards": y_pred
+}).to_csv("../prediction_files/predicted_rushing_yards_2024.csv", index=False)
 
 print("✅ Model and predictions saved successfully.")
