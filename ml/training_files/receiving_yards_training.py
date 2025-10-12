@@ -43,7 +43,8 @@ features = [
     "man_coverage_pct_def", "zone_coverage_pct_def", "blitz_rate_def", "pressure_rate_def", 
     "spread_line", "total_line", "over_odds", "under_odds",
     "player_moneyline", "fantasy_points", "fantasy_points_rolling3",
-    "receiving_yards_rolling3", "reception_rolling3", "receiving_touchdown_rolling3"
+    "receiving_yards_rolling3", "reception_rolling3", "receiving_touchdown_rolling3",
+    
 ]
 target = "receiving_yards"
 
