@@ -5,53 +5,48 @@ from sqlalchemy import create_engine
 from dotenv import load_dotenv
 import os
 from typing import List, Callable, Any
-# -------------------------------
-# Load environment and connect
-# -------------------------------
+
 load_dotenv()
 DB_URI = os.getenv("DATABASE_URL")
 engine = create_engine(DB_URI)
 
-# -------------------------------
-# Read and preprocess data
-# -------------------------------
+rolling_window = 3
+
 df = pd.read_sql_table("final_modeling_data", engine)
 
-# Filter valid rows
+
 df = df[(df["player_id"].astype(str) != "0") & (df["passing_yards"] > 0)]
 
-# Sort to preserve time order
-df = df.sort_values(by=["player_id", "season", "week"])
 
-# Extract home team from game_id
+df = df.sort_values(by=["player_id", "season", "week"])
+ 
+df["pass_attempts_rolling3"] = df.groupby("player_id")["pass_attempt"].shift(1).rolling(rolling_window).mean()
+df["completions_rolling3"] = df.groupby("player_id")["complete_pass"].shift(1).rolling(rolling_window).mean()
+
 df["home_team"] = df["game_id"].apply(lambda x: x.split("_")[-1])
 
-# Determine if player’s team is home or away, and assign moneyline
+
 df["player_moneyline"] = df.apply(
     lambda row: row["home_moneyline"] if row["posteam"] == row["home_team"] else row["away_moneyline"],
     axis=1
 )
 
-# -------------------------------
-# Define features and target
-# -------------------------------
+
 features = [
-    "week", "pass_attempt", "complete_pass", "total_touches",
+    "week", "pass_attempts_rolling3", "completions_rolling3",
     "total_pass_plays", "pass_plays_off", "pass_pct_off",
     "red_zone_pass_pct_off", "deep_pass_pct_off", "avg_air_yards_off", "avg_yac_off",
     "blitz_rate_def", "pressure_rate_def", "man_coverage_pct_def", "zone_coverage_pct_def",
     "spread_line", "total_line", "over_odds", "under_odds",
-    "player_moneyline", "fantasy_points", "fantasy_points_rolling3",
+    "player_moneyline", "fantasy_points_rolling3",
     "passing_yards_rolling3", "pass_touchdown_rolling3"
 ]
 target = "passing_yards"
 
-# Drop NaNs
+
 df_model = df[features + [target, "player_id", "season"]].dropna()
 
-# -------------------------------
-# Time-based split
-# -------------------------------
+
 train_df = df_model[df_model["season"].isin([2021, 2022, 2023])]
 test_df = df_model[df_model["season"] == 2024]
 
@@ -59,9 +54,7 @@ X_train, y_train = train_df[features], train_df[target]
 X_test, y_test = test_df[features], test_df[target]
 pid_test = test_df["player_id"]
 
-# -------------------------------
-# LightGBM training setup
-# -------------------------------
+
 train_data = lgb.Dataset(X_train, label=y_train)
 valid_data = lgb.Dataset(X_test, label=y_test, reference=train_data)
 
@@ -77,9 +70,7 @@ params = {
     "verbose": -1
 }
 
-# -------------------------------
-# Train with new callback style
-# -------------------------------
+
 
 callbacks: List[Callable[..., Any]] = [
     lgb.early_stopping(stopping_rounds=50),
@@ -95,16 +86,12 @@ model = lgb.train(
     callbacks=callbacks
 )
 
-# -------------------------------
-# Predict and evaluate
-# -------------------------------
+
 y_pred = model.predict(X_test, num_iteration=model.best_iteration)
 rmse = root_mean_squared_error(y_test, y_pred)
 print(f"Test RMSE: {rmse:.2f}")
 
-# -------------------------------
-# Save model and predictions
-# -------------------------------
+
 model.save_model("../model_files/lgb_passing_yards.txt")
 
 pd.DataFrame({
