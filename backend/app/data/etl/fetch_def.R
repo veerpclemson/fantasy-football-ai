@@ -1,7 +1,7 @@
 library(nflfastR)
 library(tidyverse)
 
-SEASONS <- 2021:2024
+SEASONS <- 2
 OUTPUT_DIR <- "backend/app/data/play_by_play/"
 
 if(!dir.exists(OUTPUT_DIR)) dir.create(OUTPUT_DIR, recursive = TRUE)
