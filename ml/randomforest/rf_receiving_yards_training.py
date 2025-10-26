@@ -16,7 +16,7 @@ engine = create_engine(DB_URI)
 # Load historical and 2025 data separately
 # -------------------------
 df = pd.read_sql_table("final_modeling_data", engine)
-df2025 = pd.read_sql_table("2025_week_6", engine)  # weeks 1-6 only
+df2025 = pd.read_sql_table("2025_updated", engine)  # weeks 1-6 only
 
 # Keep only rows with valid passing yards
 df = df[df["receiving_yards"].notna()]
@@ -71,18 +71,18 @@ leak_cols = [
 ]
 
 # Train on all historical + first 6 weeks of 2025
-train = combined[(combined["season"] < 2025) | ((combined["season"] == 2025) & (combined["week"] <= 6))]
+train = combined[(combined["season"] < 2025) | ((combined["season"] == 2025) & (combined["week"] <= 7))]
 X_train = train.drop(columns=[target, "player_id", "game_id", "season", "week"] + leak_cols)
 y_train = train[target]
 
-total_receiving_yards = combined[(combined["season"] == 2025) & (combined["week"] <= 6)] \
+total_receiving_yards = combined[(combined["season"] == 2025) & (combined["week"] <= 7)] \
     .groupby("player_id")["receiving_yards"].sum()
 
 # Keep only players with >0 passing yards
 active_players = total_receiving_yards[total_receiving_yards > 0].index
 
 # Prepare next week (week 7) test set
-last_week = combined[(combined["season"] == 2025) & (combined["week"] <= 6) & (combined["player_id"].isin(active_players))] \
+last_week = combined[(combined["season"] == 2025) & (combined["week"] <= 7) & (combined["player_id"].isin(active_players))] \
     .groupby("player_id").last().reset_index()
 
 # Build X_test for prediction
@@ -114,7 +114,7 @@ model.fit(X_train, y_train)
 # -------------------------
 # Predict week 7
 # -------------------------
-week6_test = combined[(combined["season"] == 2025) & (combined["week"] == 6)]
+week6_test = combined[(combined["season"] == 2025) & (combined["week"] == 7)]
 
 X_week6 = week6_test.drop(columns=[target, "player_id", "game_id", "season", "week"] + leak_cols)
 X_week6 = pd.get_dummies(X_week6, drop_first=True)

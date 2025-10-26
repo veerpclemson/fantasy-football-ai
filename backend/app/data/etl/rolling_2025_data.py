@@ -103,5 +103,5 @@ df_player_week = df_player_week.merge(
 )
 df_player_week = df_player_week[df_player_week['player_id'] != '0']
 df_player_week.to_csv("../2025/2025_final_data.csv", index=False)
-df_player_week.to_sql("2025_week_6", engine, if_exists="replace", index=False)
+df_player_week.to_sql("2025_updated", engine, if_exists="replace", index=False)
 
