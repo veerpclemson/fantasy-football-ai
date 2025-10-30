@@ -16,7 +16,7 @@ engine = create_engine(DB_URI)
 # Load historical and 2025 data separately
 # -------------------------
 df = pd.read_sql_table("final_modeling_data", engine)
-df2025 = pd.read_sql_table("2025_updated", engine)  # weeks 1-6 only
+df2025 = pd.read_sql_table("2025_updated", engine)  # weeks 1-7 only
 
 # Keep only rows with valid passing yards
 df = df[df["rushing_yards"].notna()]
@@ -70,19 +70,19 @@ leak_cols = [
     "rush_pct_off"
 ]
 
-# Train on all historical + first 6 weeks of 2025
-train = combined[(combined["season"] < 2025) | ((combined["season"] == 2025) & (combined["week"] <= 7))]
+# Train on all historical + first 7 weeks of 2025
+train = combined[(combined["season"] < 2025) | ((combined["season"] == 2025) & (combined["week"] <= 8))]
 X_train = train.drop(columns=[target, "player_id", "game_id", "season", "week"] + leak_cols)
 y_train = train[target]
 
-total_rushing_yards = combined[(combined["season"] == 2025) & (combined["week"] <= 7)] \
+total_rushing_yards = combined[(combined["season"] == 2025) & (combined["week"] <= 8)] \
     .groupby("player_id")["rushing_yards"].sum()
 
 # Keep only players with >0 passing yards
 active_players = total_rushing_yards[total_rushing_yards > 0].index
 
-# Prepare next week (week 7) test set
-last_week = combined[(combined["season"] == 2025) & (combined["week"] <= 7) & (combined["player_id"].isin(active_players))] \
+# Prepare next week (week 8) test set
+last_week = combined[(combined["season"] == 2025) & (combined["week"] <= 8) & (combined["player_id"].isin(active_players))] \
     .groupby("player_id").last().reset_index()
 
 # Build X_test for prediction
@@ -112,24 +112,24 @@ model = RandomForestRegressor(
 model.fit(X_train, y_train)
 
 # -------------------------
-# Predict week 7
+# Predict week 8
 # -------------------------
-week6_test = combined[(combined["season"] == 2025) & (combined["week"] == 7)]
+week7_test = combined[(combined["season"] == 2025) & (combined["week"] == 8)]
 
-X_week6 = week6_test.drop(columns=[target, "player_id", "game_id", "season", "week"] + leak_cols)
-X_week6 = pd.get_dummies(X_week6, drop_first=True)
-X_train, X_week6 = X_train.align(X_week6, join="left", axis=1, fill_value=0)
+X_week7 = week7_test.drop(columns=[target, "player_id", "game_id", "season", "week"] + leak_cols)
+X_week7 = pd.get_dummies(X_week7, drop_first=True)
+X_train, X_week7 = X_train.align(X_week7, join="left", axis=1, fill_value=0)
 
-y_week6 = week6_test[target]
-y_week6_pred = model.predict(X_week6)
+y_week7 = week7_test[target]
+y_week7_pred = model.predict(X_week7)
 
-mae_week6 = mean_absolute_error(y_week6, y_week6_pred)
-r2_week6 = r2_score(y_week6, y_week6_pred)
+mae_week7 = mean_absolute_error(y_week7, y_week7_pred)
+r2_week7 = r2_score(y_week7, y_week7_pred)
 y_pred = model.predict(X_test)
 
 last_week["predicted_rushing_yards"] = y_pred
 last_week["name"] = last_week["player_id"].map(names_map)
-print(f"Week 6 Mean Absolute Error: {mae_week6:.2f}")
-print(f"Week 6 R² Score: {r2_week6:.3f}")
+print(f"Week 7 Mean Absolute Error: {mae_week7:.2f}")
+print(f"Week 7 R² Score: {r2_week7:.3f}")
 print(last_week[["player_id", "name", "predicted_rushing_yards"]].head(50))
-last_week[["player_id", "name", "predicted_rushing_yards"]].to_csv("predictions/week7_rushing_predictions.csv", index=False)
+last_week[["player_id", "name", "predicted_rushing_yards"]].to_csv("predictions/week8_rushing_predictions.csv", index=False)
